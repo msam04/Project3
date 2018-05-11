@@ -391,6 +391,11 @@ model = svm.SVC(kernel='rbf', C=1, gamma=1)
 model.fit(train4, y1)
 print("SVM: ", model.score(test4, vy1))
 
+"""
+1) With 3 fold cross validation, a score of approximately 80% is got using logistic regression.
+2) All the features except education -  which can be removed because of number of years of education column and age, sex, race - which are accounted for fnlwgt
+3) Logistic regression - because simplest model for this classification problem and gives better accuracy than other classifiers.
+
 
 
 
