@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[51]:
+# In[ ]:
 
 
 import pandas as pd
@@ -64,13 +64,16 @@ native-country: United-States, Cambodia, England, Puerto-Rico, Canada, Germany, 
 
 
 df = pd.read_csv('adult.data', sep=",", header=None, index_col = False, names=["age", "workclass", "fnlwgt", "education", "education-num", "marital-status", "occupation", "relationship", "race", "sex", "capital-gain", "capital-loss", "hours-per-week", "native-country", "income-range" ])
-#print(df.head())
+print(df.head())
 
 #since education and education-num are the same info, remove education
 
 df = df.drop('education', axis = 1)
 list(df)
+#Removing NA values and replacing them with 0
 df.fillna(0, inplace = True)
+#Removing duplicate values
+df.drop_duplicates(inplace = True)
 
 #remove rows with unknown values in any column
 
@@ -103,14 +106,14 @@ df = df[(df['native-country'] == ' United-States') |  (df['native-country'] == '
 (df['native-country'] == ' Hong')] 
   
 
-#print(df['workclass'].unique())
-#print(df['occupation'].unique())
-#print(df['relationship'].unique())
-#print(df['race'].unique())
-#print(df['sex'].unique())
-#print(df['native-country'].unique())
-#print(df['marital-status'].unique())
-#print(df.shape)
+print(df['workclass'].unique())
+print(df['occupation'].unique())
+print(df['relationship'].unique())
+print(df['race'].unique())
+print(df['sex'].unique())
+print(df['native-country'].unique())
+print(df['marital-status'].unique())
+print(df.shape)
 
     
   
@@ -140,12 +143,14 @@ df['native-country'] = df['native-country'].map({' United-States': 0, ' Cuba': 1
  ' Greece':31, ' Nicaragua':32, ' Vietnam':33, ' Hong':34, ' Ireland':35, ' Hungary':36,
  ' Holand-Netherlands':37})
 
-#print(df['income-range'].unique())
+print(df['income-range'].unique())
 
 df['income-range'].replace(' <=', ' <=50K', inplace = True)
 
 df['income-range'] = df['income-range'].map({' <=50K': 1, ' >50K': 2})
-#print(df['income-range'].unique())
+print(df['income-range'].unique())
+
+#Plot the columns which have few unique values to the output variable, to see if there is a dependence
 
 pd.crosstab(df['sex'],df['income-range']).plot(kind='bar')
 plt.title('Gender vs Income Range')
@@ -186,7 +191,7 @@ plt.savefig('Marital Status vs Income Range')
 
 df_test = pd.read_csv('adult.test', sep=",", header=None, index_col = False, skiprows = 1, names=["age", "workclass", "fnlwgt", "education", "education-num", "marital-status", "occupation", "relationship", "race", "sex", "capital-gain", "capital-loss", "hours-per-week", "native-country", "income-range" ])
 df_test = df_test.drop('education', axis = 1)
-#print(df_test.shape)
+print(df_test.shape)
 df_test.fillna(0, inplace = True)
 df_test.drop_duplicates(inplace = True)
 
@@ -252,16 +257,16 @@ df_test['native-country'] = df_test['native-country'].map({' United-States': 0, 
 df_test['marital-status'] = df_test['marital-status'].map({' Never-married': 0, ' Married-civ-spouse': 1, ' Divorced': 2,
  ' Married-spouse-absent': 3, ' Separated': 4, ' Married-AF-spouse': 5, ' Widowed': 6})
 
-#print(df_test['income-range'].unique())
+print(df_test['income-range'].unique())
 df_test['income-range'].replace(' <=', ' <=50K', inplace = True)
-#print(df_test['income-range'].unique())
+print(df_test['income-range'].unique())
 df_test['income-range'] = df_test['income-range'].map({' <=50K.': 1, ' >50K.': 2})
-#print(df_test['income-range'].unique())
+print(df_test['income-range'].unique())
 
-#print(df_test.head())
+print(df_test.head())
 
 
-"""
+
 #//divide with integer, discard remainder
 hfig, haxes = plt.subplots(len(df.columns)//2, 2, figsize=(20,20))
    
@@ -283,11 +288,13 @@ for sevenaxis in baxes:
         i = i+1
         
 plt.show()
-"""
 
+
+#Remove output variable from training data
 x1 = df.drop('income-range', axis = 1)
 y1 = df['income-range']
 
+#Remove output variable from testing data
 vx1 = df_test.drop('income-range', axis = 1)
 vy1 = df_test['income-range']
 
@@ -298,9 +305,9 @@ pca = PCA(n_components = 13)
 x3 = pca.fit_transform(x2)
 #print(pca.components_)
 
-"""
-# Create and fit selector
 
+#Try various selectors
+# Create and fit selector
 selector1 = SelectKBest(mutual_info_classif, k=5)
 selector1.fit(x1, y1)
 # Get idxs of columns to keep
@@ -335,33 +342,35 @@ for i in idxs_selected:
 train3 = x1[n_list]
 test3 = vx1[n_list]
 
-#print(train1.head())
-#print(train2.head())
-#print(train3.head())
-"""
+print(train1.head())
+print(train2.head())
+print(train3.head())
+
 
 
 
 lnr = LinearRegression()
 model = lnr.fit(x1,y1)
 predictions = lnr.predict(vx1)
-print("Linear regression score: ", lnr.score(vx1, vy1))
+print("Linear regression score using all 10 features: ", lnr.score(vx1, vy1))
 
 model = lnr.fit(train1,y1)
 predictions = lnr.predict(test1)
-print("Linear regression score: ", lnr.score(test1, vy1))
+print("Linear regression score using the 5 best selected features by mutual_info_classif: ", lnr.score(test1, vy1))
 
 model = lnr.fit(train2,y1)
 predictions = lnr.predict(test2)
-print("Linear regression score: ", lnr.score(test2, vy1))
+print("Linear regression score using the 5 best selected features by f_classif: ", lnr.score(test2, vy1))
 
 model = lnr.fit(train3,y1)
 predictions = lnr.predict(test3)
-print("Linear regression score: ", lnr.score(test3, vy1))
+print("Linear regression score using the 5 best selected features by chi2: ", lnr.score(test3, vy1))
 
 #x1 = x1.drop('fnlwgt', axis = 1)
 #vx1 = vx1.drop('fnlwgt', axis = 1)
 #c_list.remove('fnlwgt')
+
+#Dropping fnlwgt or dropping race and sex and age give similar results. fnlwgt is a function of race, sex and age according to documentation in the source data website.
 x1 = x1.drop(['race', 'age', 'sex'], axis = 1)
 vx1 = vx1.drop(['race', 'age', 'sex'], axis = 1)
 #c_list.remove('race', 'age', 'sex')
@@ -371,17 +380,38 @@ logreg = LogisticRegression()
 rfe = RFE(logreg, 10)
 rfe = rfe.fit(x1, y1 )
 
-print(rfe.support_)
-print(rfe.ranking_)
 
 n_list = []
 for i in range(10):
     if (rfe.support_[i]):
         n_list.append(c_list[i])
+        
+        
 train4 = x1[n_list]
 test4 = vx1[n_list]
+
+rfe2 =RFE(logreg, 5)
+rfe2 = rfe2.fit(x1, y1)
+
+n_list = []
+for i in range(5):
+    if (rfe2.support_[i]):
+        n_list.append(c_list[i])
+        
+        
+train5 = x1[n_list]
+test5 = vx1[n_list]
+
+
+
 logreg.fit(train4, y1)
-print("Logistic regression score: ",logreg.score(test4, vy1))
+print("Logistic regression score using all 10 features: ",logreg.score(test4, vy1))
+
+logreg.fit(train5, y1)
+print("Logistic regression score using 5 features: ",logreg.score(test5, vy1))
+
+print("Features selected: ", c_list)
+
 
 dtr = DecisionTreeRegressor()
 model = dtr.fit(train4, y1)
@@ -390,11 +420,6 @@ print("Decision Tree score: ",dtr.score(test4, vy1))
 model = svm.SVC(kernel='rbf', C=1, gamma=1) 
 model.fit(train4, y1)
 print("SVM: ", model.score(test4, vy1))
-
-"""
-1) With 3 fold cross validation, a score of approximately 80% is got using logistic regression.
-2) All the features except education -  which can be removed because of number of years of education column and age, sex, race - which are accounted for fnlwgt
-3) Logistic regression - because simplest model for this classification problem and gives better accuracy than other classifiers.
 
 
 
